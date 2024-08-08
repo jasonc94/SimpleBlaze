@@ -1,0 +1,19 @@
+﻿.status{
+	border-radius: 50%;
+	border-width: 1px;
+	border-style: solid;
+	width: 11px;
+	height: 11px;
+}
+
+.New {
+	background: #495057;
+}
+
+.InProgress {
+	background: #ffc107;
+}
+
+.Complete {
+	background: #11d57a;
+}

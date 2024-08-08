@@ -5,15 +5,48 @@
         <span class="card-title"> <strong>Name:</strong> @WorkItem.Name</span>
     </div>
     <div class="card-body">
-        <span><strong>Status:</strong> @WorkItem.Status</span>
-        <footer><strong>Created On:</strong> <span > @WorkItem.CreatedDateTime</span></footer>
+        <div class="d-flex flex-row justify-content-between align-items-center gap-3">
+            <div class="d-flex flex-row align-items-center gap-1">
+                <div class="status flex-shrink-0 @CurrentStatus"></div>
+                <span><strong>Status:</strong></span>
+            </div>
+        
+            <select @onchange="OnStatusChanged" class="form-select">
+                @foreach (var status in Enum.GetValues(typeof(Models.TaskStatus)).Cast<Models.TaskStatus>())
+                {
+                    <option value="@status.ToString()">@GetStatusDisplayName(status)</option>
+                }
+            </select>
+        </div>
+        <footer>
+            <strong>Created On:</strong> <span > @WorkItem.CreatedDateTime</span>
+            @if (WorkItem.CompletedDateTime != null)
+            {
+                <strong>Completed On:</strong> <span> @WorkItem.CompletedDateTime</span>
+            }
+        </footer>
     </div>
 </div>
 
 
 @code {
-	[Parameter]
-	public WorkItem WorkItem { get; set; }
+    [Parameter]
+    public WorkItem WorkItem { get; set; }
+
+    private Models.TaskStatus CurrentStatus { get; set; } 
+
+    protected override void OnInitialized()
+    {
+        CurrentStatus = WorkItem.Status;
+    }
+
+    private void OnStatusChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<Models.TaskStatus>(e.Value.ToString(), out var status))
+        {
+            CurrentStatus = status;
+        }
+    }
 
     private string GetStatusDisplayName(Models.TaskStatus status)
     {
