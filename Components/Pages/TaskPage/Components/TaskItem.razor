@@ -1,0 +1,28 @@
+﻿@using Models;
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"> <strong>Name:</strong> @WorkItem.Name</span>
+    </div>
+    <div class="card-body">
+        <span><strong>Status:</strong> @WorkItem.Status</span>
+        <footer><strong>Created On:</strong> <span > @WorkItem.CreatedDateTime</span></footer>
+    </div>
+</div>
+
+
+@code {
+	[Parameter]
+	public WorkItem WorkItem { get; set; }
+
+    private string GetStatusDisplayName(Models.TaskStatus status)
+    {
+        return status switch
+        {
+            Models.TaskStatus.New => "New",
+            Models.TaskStatus.InProgress => "In-Progress",
+            Models.TaskStatus.Complete => "Completed",
+            _ => status.ToString()
+        };
+    }
+}
