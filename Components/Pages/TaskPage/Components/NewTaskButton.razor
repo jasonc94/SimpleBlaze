@@ -29,7 +29,7 @@
 
 	private async Task CreateNewTask()
 	{
-		tasksService.AddNewTask(newTask);
+		await tasksService.AddNewTask(newTask);
 		await CloseModal();
 	}
 

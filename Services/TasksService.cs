@@ -8,11 +8,11 @@ namespace SimpleBlazorApp.Services
 	{
 		event Action OnStateChanged;
 		List<WorkItem> GetAllTasks();
-		bool DeleteTask(WorkItem task);
+		Task DeleteTask(WorkItem task);
 
-		bool AddNewTask(WorkItem task);
+		Task AddNewTask(WorkItem task);
 
-		bool UpdateTask(WorkItem task);
+		Task UpdateTask(WorkItem task);
 
 	}
 	public class TasksService : ITasksService
@@ -50,36 +50,31 @@ namespace SimpleBlazorApp.Services
 			};
 		}
 
-		public bool AddNewTask(WorkItem task)
+		public async Task AddNewTask(WorkItem task)
 		{
 			TaskList.Add(task);
 			OnStateChanged?.Invoke();
-			return true;
 		}
 
-		public bool DeleteTask(WorkItem task)
+		public async Task DeleteTask(WorkItem task)
 		{
 			TaskList.RemoveAll(t => t.Id == task.Id);
 			OnStateChanged?.Invoke();
-			return true;
 		}
 
 		public List<WorkItem> GetAllTasks()
 		{
-
 			return TaskList;
 		}
 
-		public bool UpdateTask(WorkItem task)
+		public async Task UpdateTask(WorkItem task)
 		{
 			var index = TaskList.FindIndex(t => t.Id == task.Id);
-			if (index == -1)
+			if (index != -1)
 			{
-				return false;
+				TaskList[index] = task;
+				OnStateChanged?.Invoke();
 			}
-			TaskList[index] = task;
-			OnStateChanged?.Invoke();
-			return true;
 		}
 	}
 }

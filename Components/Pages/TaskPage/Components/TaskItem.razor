@@ -1,7 +1,5 @@
 ﻿@inject ITasksService tasksService
 
-@using Models;
-
 <ConfirmDialog @ref="dialog" />
 
 <Card>
@@ -47,7 +45,7 @@
 		{
 			WorkItem.Status = status;
 			WorkItem.CompletedDateTime = status == Models.TaskStatus.Complete ? DateTime.UtcNow : null;
-			tasksService.UpdateTask(WorkItem);
+			await tasksService.UpdateTask(WorkItem);
 		}
 	}
 
@@ -72,7 +70,7 @@
 
 		if (confirmation)
 		{
-			tasksService.DeleteTask(WorkItem);
+			await tasksService.DeleteTask(WorkItem);
 		}
 	}
 }
