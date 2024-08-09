@@ -2,10 +2,12 @@
 
 @using Models;
 
+<ConfirmDialog @ref="dialog" />
+
 <Card>
 	<CardHeader Class="d-flex flex-row justify-content-between align-items-center">
 		<span class="card-title"> <strong>Name:</strong> @WorkItem.Name</span>
-		<Button Color="ButtonColor.Danger" @onclick="DeleteTask"> Delete </Button>
+		<Button Color="ButtonColor.Danger" @onclick="ShowConfirmationAsync"> Delete </Button>
 	</CardHeader>
 	<CardBody Class="d-flex flex-column gap-2">
 		<div class="d-flex flex-row justify-content-between align-items-center gap-3">
@@ -37,6 +39,7 @@
 	[Parameter]
 	public WorkItem WorkItem { get; set; }
 
+	private ConfirmDialog dialog = default!;
 
 	private async Task OnStatusChanged(ChangeEventArgs e)
 	{
@@ -58,8 +61,18 @@
 			_ => status.ToString()
 		};
 	}
-	private async Task DeleteTask()
+
+	private async Task ShowConfirmationAsync()
 	{
-		tasksService.DeleteTask(WorkItem);
+		var confirmation = await dialog.ShowAsync(
+			title: "Confirmation",
+			message1: "Are you sure you want to delete this?",
+			confirmDialogOptions: new ConfirmDialogOptions { IsVerticallyCentered = true }
+		);
+
+		if (confirmation)
+		{
+			tasksService.DeleteTask(WorkItem);
+		}
 	}
 }
