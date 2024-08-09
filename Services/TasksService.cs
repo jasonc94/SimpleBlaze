@@ -6,6 +6,7 @@ namespace SimpleBlazorApp.Services
 {
 	public interface ITasksService
 	{
+		event Action OnStateChanged;
 		List<WorkItem> GetAllTasks();
 		bool DeleteTask(WorkItem task);
 
@@ -17,6 +18,7 @@ namespace SimpleBlazorApp.Services
 	public class TasksService : ITasksService
 	{
 		public List<WorkItem> TaskList = new List<WorkItem>();
+		public event Action OnStateChanged;
 
 		public TasksService() {
 			TaskList = new List<WorkItem>
@@ -51,12 +53,14 @@ namespace SimpleBlazorApp.Services
 		public bool AddNewTask(WorkItem task)
 		{
 			TaskList.Add(task);
+			OnStateChanged?.Invoke();
 			return true;
 		}
 
 		public bool DeleteTask(WorkItem task)
 		{
 			TaskList.RemoveAll(t => t.Id == task.Id);
+			OnStateChanged?.Invoke();
 			return true;
 		}
 
@@ -74,6 +78,7 @@ namespace SimpleBlazorApp.Services
 				return false;
 			}
 			TaskList[index] = task;
+			OnStateChanged?.Invoke();
 			return true;
 		}
 	}

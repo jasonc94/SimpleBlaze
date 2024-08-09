@@ -37,9 +37,6 @@
 	[Parameter]
 	public WorkItem WorkItem { get; set; }
 
-	[Parameter]
-	public EventCallback OnTaskUpdatedOrDeleted { get; set; }
-
 
 	private async Task OnStatusChanged(ChangeEventArgs e)
 	{
@@ -48,8 +45,6 @@
 			WorkItem.Status = status;
 			WorkItem.CompletedDateTime = status == Models.TaskStatus.Complete ? DateTime.UtcNow : null;
 			tasksService.UpdateTask(WorkItem);
-
-			await OnTaskUpdatedOrDeleted.InvokeAsync();
 		}
 	}
 
@@ -66,6 +61,5 @@
 	private async Task DeleteTask()
 	{
 		tasksService.DeleteTask(WorkItem);
-		await OnTaskUpdatedOrDeleted.InvokeAsync();
 	}
 }
