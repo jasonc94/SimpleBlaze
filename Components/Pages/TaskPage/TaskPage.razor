@@ -1,14 +1,16 @@
 ﻿@page "/task"
 @rendermode InteractiveServer
-@using SimpleBlazorApp.Models;
+
+
 @using SimpleBlazorApp.Components.Pages.TaskPage.Components;
 
 <PageTitle>Tasks</PageTitle>
 
 <div class="d-flex flex-row justify-content-between align-items-center mb-3">
 	<h1>Tasks</h1>
-	<button type="button" class="btn btn-primary">Add New Task</button>
+	<NewTaskButton OnNewTaskCreated="AddNewTask"></NewTaskButton>
 </div>
+
 
 
 <div class="container-fluid">
@@ -35,7 +37,7 @@
 
 
 @code {
-	private int currentCount = 0;
+
 	private List<WorkItem>? tasks = null;
 	private List<Models.TaskStatus> statuses = new List<Models.TaskStatus>
 	{
@@ -43,6 +45,12 @@
 		Models.TaskStatus.InProgress,
 		Models.TaskStatus.Complete,
 	};
+
+
+
+
+
+
 	protected override Task OnInitializedAsync()
 	{
 		tasks = new List<WorkItem>
@@ -89,4 +97,8 @@
 		};
 	}
 
+	private void AddNewTask(WorkItem newTask)
+	{
+		tasks.Add(newTask);
+	}
 }

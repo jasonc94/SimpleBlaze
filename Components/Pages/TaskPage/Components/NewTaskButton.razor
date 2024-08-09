@@ -1,0 +1,44 @@
+﻿<button type="button" class="btn btn-primary" @onclick="ShowModal">Add New Task</button>
+
+<Modal @ref="modal" Title="Add New Task" IsVerticallyCentered="true" />
+
+<Modal @ref="modal" Title="Add New Task" IsVerticallyCentered="true">
+	<BodyTemplate>
+		Modal body text goes here.
+	</BodyTemplate>
+	<FooterTemplate>
+		<Button Color="ButtonColor.Secondary" @onclick="CloseModal">Close</Button>
+		<Button Color="ButtonColor.Primary" @onclick="CreateNewTask">Create</Button>
+	</FooterTemplate>
+</Modal>
+
+@code {
+	[Parameter]
+	public EventCallback<WorkItem> OnNewTaskCreated { get; set; }
+
+	private Modal modal = default!;
+
+	private async Task CreateNewTask()
+	{
+		var newTask = new WorkItem()
+			{
+				Name = "New Task",
+				CreatedDateTime = DateTime.UtcNow,
+				Description = "New Task",
+				Status = Models.TaskStatus.New
+			};
+
+		await OnNewTaskCreated.InvokeAsync(newTask);
+		await CloseModal();
+	}
+
+	private async Task ShowModal()
+	{
+		await modal.ShowAsync();
+	}
+
+	private async Task CloseModal()
+	{
+		await modal.HideAsync();
+	}
+}
