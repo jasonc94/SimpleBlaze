@@ -1,6 +1,7 @@
 ﻿@page "/task"
+@attribute [StreamRendering(true)]
 @rendermode InteractiveServer
-
+@inject ITasksService tasksService
 
 @using SimpleBlazorApp.Components.Pages.TaskPage.Components;
 
@@ -8,7 +9,7 @@
 
 <div class="d-flex flex-row justify-content-between align-items-center mb-3">
 	<h1>Tasks</h1>
-	<NewTaskButton OnNewTaskCreated="AddNewTask"></NewTaskButton>
+	<NewTaskButton OnNewTaskCreated="TaskListChanged"></NewTaskButton>
 </div>
 
 
@@ -24,7 +25,7 @@
 				@foreach (var task in Tasks(status))
 				{
 					<div class="py-3">
-						<TaskItem WorkItem="task" ></TaskItem>
+						<TaskItem WorkItem="task" OnTaskUpdatedOrDeleted="TaskListChanged"></TaskItem>
 					</div>
 
 				}
@@ -38,7 +39,7 @@
 
 @code {
 
-	private List<WorkItem>? tasks = null;
+	private IList<WorkItem>? tasks { get; set; } = new List<WorkItem>();
 	private List<Models.TaskStatus> statuses = new List<Models.TaskStatus>
 	{
 		Models.TaskStatus.New,
@@ -46,44 +47,21 @@
 		Models.TaskStatus.Complete,
 	};
 
-
-
-
-
-
 	protected override Task OnInitializedAsync()
 	{
-		tasks = new List<WorkItem>
-		{
-			new WorkItem()
-			{
-				Name = "Create Task Page",
-				Description = "Create Task Page",
-				CreatedDateTime = DateTime.UtcNow,
-				Status = Models.TaskStatus.InProgress
-			},
-			new WorkItem()
-			{
-				Name = "Create Video Search Page",
-				Description = "Create Video Search Page",
-				CreatedDateTime = DateTime.UtcNow,
-				Status = Models.TaskStatus.New
-			},
-						new WorkItem()
-			{
-				Name = "Create GIf Search Page",
-				Description = "Create GIf Search Page",
-				CreatedDateTime = DateTime.UtcNow,
-				Status = Models.TaskStatus.New
-			},
-
-		};
+		tasks = tasksService.GetAllTasks();
 		return base.OnInitializedAsync();
 	}
 
 	private IEnumerable<WorkItem> Tasks(Models.TaskStatus status)
 	{
 		return tasks.Where(t => t.Status == status);
+	}
+
+	private void TaskListChanged()
+	{
+		tasks = tasksService.GetAllTasks();
+		StateHasChanged();
 	}
 
 	private string GetStatusDisplayName(Models.TaskStatus status)
@@ -95,10 +73,5 @@
 			Models.TaskStatus.Complete => "Completed",
 			_ => status.ToString()
 		};
-	}
-
-	private void AddNewTask(WorkItem newTask)
-	{
-		tasks.Add(newTask);
 	}
 }

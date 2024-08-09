@@ -1,12 +1,9 @@
 using SimpleBlazorApp.Components;
+using SimpleBlazorApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-builder.Services.AddBlazorBootstrap();
+ConfigureServices(builder.Services);
 
 var app = builder.Build();
 
@@ -27,3 +24,15 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+
+static void ConfigureServices(IServiceCollection services)
+{
+	// Add services to the container.
+	services.AddRazorComponents()
+		.AddInteractiveServerComponents();
+
+	services.AddBlazorBootstrap();
+
+	services.AddSingleton<ITasksService, TasksService>();
+}

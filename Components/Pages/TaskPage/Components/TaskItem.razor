@@ -1,62 +1,71 @@
-﻿@using Models;
+﻿@inject ITasksService tasksService
 
-<div class="card">
-    <div class="card-header">
-        <span class="card-title"> <strong>Name:</strong> @WorkItem.Name</span>
-        <Button Color="ButtonColor.Danger"> Delete </Button>
-    </div>
-    <div class="card-body">
-        <div class="d-flex flex-row justify-content-between align-items-center gap-3">
-            <div class="d-flex flex-row align-items-center gap-1">
-                <div class="status flex-shrink-0 @CurrentStatus"></div>
-                <span><strong>Status:</strong></span>
-            </div>
-        
-            <select @onchange="OnStatusChanged" class="form-select">
-                @foreach (var status in Enum.GetValues(typeof(Models.TaskStatus)).Cast<Models.TaskStatus>())
-                {
-                    <option value="@status.ToString()">@GetStatusDisplayName(status)</option>
-                }
-            </select>
-        </div>
-        <footer>
-            <strong>Created On:</strong> <span > @WorkItem.CreatedDateTime</span>
-            @if (WorkItem.CompletedDateTime != null)
-            {
-                <strong>Completed On:</strong> <span> @WorkItem.CompletedDateTime</span>
-            }
-        </footer>
-    </div>
-</div>
+@using Models;
+
+<Card>
+	<CardHeader Class="d-flex flex-row justify-content-between align-items-center">
+		<span class="card-title"> <strong>Name:</strong> @WorkItem.Name</span>
+		<Button Color="ButtonColor.Danger" @onclick="DeleteTask"> Delete </Button>
+	</CardHeader>
+	<CardBody Class="d-flex flex-column gap-2">
+		<div class="d-flex flex-row justify-content-between align-items-center gap-3">
+			<div class="d-flex flex-row align-items-center gap-1">
+				<div class="status flex-shrink-0 @WorkItem.Status"></div>
+				<span><strong>Status:</strong></span>
+			</div>
+
+			<select @onchange="OnStatusChanged" class="form-select" value="@WorkItem.Status">
+				@foreach (var status in Enum.GetValues(typeof(Models.TaskStatus)).Cast<Models.TaskStatus>())
+				{
+					<option value="@status.ToString()">@GetStatusDisplayName(status)</option>
+				}
+			</select>
+
+		</div>
+		<footer class="d-flex flex-column gap-2">
+			<strong>Created On:</strong> <span> @WorkItem.CreatedDateTime</span>
+			@if (WorkItem.CompletedDateTime != null)
+			{
+				<strong>Completed On:</strong> <span> @WorkItem.CompletedDateTime</span>
+			}
+		</footer>
+	</CardBody>
+</Card>
 
 
 @code {
-    [Parameter]
-    public WorkItem WorkItem { get; set; }
+	[Parameter]
+	public WorkItem WorkItem { get; set; }
 
-    private Models.TaskStatus CurrentStatus { get; set; } 
+	[Parameter]
+	public EventCallback OnTaskUpdatedOrDeleted { get; set; }
 
-    protected override void OnInitialized()
-    {
-        CurrentStatus = WorkItem.Status;
-    }
 
-    private void OnStatusChanged(ChangeEventArgs e)
-    {
-        if (Enum.TryParse<Models.TaskStatus>(e.Value.ToString(), out var status))
-        {
-            CurrentStatus = status;
-        }
-    }
+	private async Task OnStatusChanged(ChangeEventArgs e)
+	{
+		if (Enum.TryParse<Models.TaskStatus>(e.Value.ToString(), out var status))
+		{
+			WorkItem.Status = status;
+			WorkItem.CompletedDateTime = status == Models.TaskStatus.Complete ? DateTime.UtcNow : null;
+			tasksService.UpdateTask(WorkItem);
 
-    private string GetStatusDisplayName(Models.TaskStatus status)
-    {
-        return status switch
-        {
-            Models.TaskStatus.New => "New",
-            Models.TaskStatus.InProgress => "In-Progress",
-            Models.TaskStatus.Complete => "Completed",
-            _ => status.ToString()
-        };
-    }
+			await OnTaskUpdatedOrDeleted.InvokeAsync();
+		}
+	}
+
+	private string GetStatusDisplayName(Models.TaskStatus status)
+	{
+		return status switch
+		{
+			Models.TaskStatus.New => "New",
+			Models.TaskStatus.InProgress => "In-Progress",
+			Models.TaskStatus.Complete => "Completed",
+			_ => status.ToString()
+		};
+	}
+	private async Task DeleteTask()
+	{
+		tasksService.DeleteTask(WorkItem);
+		await OnTaskUpdatedOrDeleted.InvokeAsync();
+	}
 }

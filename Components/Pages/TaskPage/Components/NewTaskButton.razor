@@ -1,4 +1,6 @@
-﻿<button type="button" class="btn btn-primary" @onclick="ShowModal">Add New Task</button>
+﻿@inject ITasksService tasksService
+
+<Button Color="ButtonColor.Primary" @onclick="ShowModal">Add New Task</Button>
 
 <Modal @ref="modal" Title="Add New Task" IsVerticallyCentered="true" />
 
@@ -22,12 +24,14 @@
 	{
 		var newTask = new WorkItem()
 			{
+				Id = Guid.NewGuid().ToString(),
 				Name = "New Task",
 				CreatedDateTime = DateTime.UtcNow,
 				Description = "New Task",
 				Status = Models.TaskStatus.New
 			};
 
+		tasksService.AddNewTask(newTask);
 		await OnNewTaskCreated.InvokeAsync(newTask);
 		await CloseModal();
 	}
