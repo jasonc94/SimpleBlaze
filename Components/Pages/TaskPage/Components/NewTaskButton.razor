@@ -2,39 +2,46 @@
 
 <Button Color="ButtonColor.Primary" @onclick="ShowModal">Add New Task</Button>
 
-<Modal @ref="modal" Title="Add New Task" IsVerticallyCentered="true" />
 
 <Modal @ref="modal" Title="Add New Task" IsVerticallyCentered="true">
 	<BodyTemplate>
-		Modal body text goes here.
+		<EditForm EditContext="@editContext" OnValidSubmit="CreateNewTask">
+			<DataAnnotationsValidator />
+			<div class="mb-3">
+				<label class="form-label">Task Name: </label>
+				<InputText @bind-Value="newTask.Name" class="form-control"></InputText>
+				<ValidationMessage For="@(() => newTask.Name)" />
+			</div>
+			<div class="d-flex flex-row justify-content-end gap-2">
+				<Button Color="ButtonColor.Secondary" @onclick="CloseModal">Close</Button>
+				<Button Type="ButtonType.Submit" Color="ButtonColor.Primary">Create</Button>
+			</div>
+
+		</EditForm>
 	</BodyTemplate>
-	<FooterTemplate>
-		<Button Color="ButtonColor.Secondary" @onclick="CloseModal">Close</Button>
-		<Button Color="ButtonColor.Primary" @onclick="CreateNewTask">Create</Button>
-	</FooterTemplate>
 </Modal>
 
 @code {
 
 	private Modal modal = default!;
+	private EditContext? editContext;
+	private WorkItem? newTask;
 
 	private async Task CreateNewTask()
 	{
-		var newTask = new WorkItem()
-			{
-				Id = Guid.NewGuid().ToString(),
-				Name = "New Task",
-				CreatedDateTime = DateTime.UtcNow,
-				Description = "New Task",
-				Status = Models.TaskStatus.New
-			};
-
 		tasksService.AddNewTask(newTask);
 		await CloseModal();
 	}
 
 	private async Task ShowModal()
 	{
+		newTask = new WorkItem()
+			{
+				Id = Guid.NewGuid().ToString(),
+				CreatedDateTime = DateTime.UtcNow,
+				Status = Models.TaskStatus.New
+			};
+		editContext = new EditContext(newTask);
 		await modal.ShowAsync();
 	}
 
