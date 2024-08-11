@@ -1,6 +1,6 @@
 ﻿@page "/giphy"
 @rendermode InteractiveServer
-@* @attribute [StreamRendering(true)] *@
+@attribute [StreamRendering(true)]
 @inject IGiphyService giphyService
 
 <h3>Trending Gif</h3>
@@ -9,6 +9,13 @@
 	<Button @onclick="OnSearch" Color="ButtonColor.Primary">Search</Button>
 </div>
 
+@if (isLoading)
+{
+	<div class="d-flex flex-column align-items-center">
+		<Spinner Color="SpinnerColor.Dark" Size="SpinnerSize.ExtraLarge" />
+	</div>
+
+}
 
 <div class="d-flex flex-wrap">
 	@foreach (var img in giphyImages)
@@ -26,6 +33,7 @@
 	private int pageLimit = 50;
 	private int currentPage = 1;
 	private string searchString = "";
+	private bool isLoading = true;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -40,7 +48,10 @@
 
 	private async Task GetTrendImages(int offset = 0)
 	{
+		isLoading = true;
 		var response = await giphyService.Trending(offset);
+		await Task.Delay(1000);
+		isLoading = false;
 		giphyPagination = response.Pagination;
 		currentPage = giphyPagination.Offset / pageLimit + 1;
 		giphyImages = response.Data.Select(d => d.Images.Original.Url).ToList();
@@ -55,10 +66,13 @@
 
 	private async Task OnSearch()
 	{
+	
 		if (!string.IsNullOrWhiteSpace(searchString))
 		{
+			isLoading = true;
 			var response = await giphyService.Serach(searchString);
 			SetImages(response);
+			isLoading = false;
 		}
 		else
 		{
