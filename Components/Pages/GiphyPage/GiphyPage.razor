@@ -1,0 +1,68 @@
+﻿@page "/giphy"
+@rendermode InteractiveServer
+@* @attribute [StreamRendering(true)] *@
+@inject IGiphyService giphyService
+
+<h3>Trending Gif</h3>
+<div class="container d-flex gap-2">
+	<input class="form-control" placeholder="Search..." @bind="searchString"/>
+	<Button @onclick="OnSearch" Color="ButtonColor.Primary">Search</Button>
+</div>
+
+
+<div class="d-flex flex-wrap">
+	@foreach (var img in giphyImages)
+	{
+		<img class="m-3 rounded-top" src="@img" alt="placeholder" />
+	}
+</div>
+
+<Pagination ActivePageNumber="@currentPage" TotalPages="@giphyPagination.TotalCount" Alignment="Alignment.End" PageChanged="OnPageChangedAsync" />
+
+
+@code {
+	private List<string> giphyImages = new List<string>();
+	private Models.Pagination giphyPagination = new();
+	private int pageLimit = 50;
+	private int currentPage = 1;
+	private string searchString = "";
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetTrendImages();
+	}
+
+	private async Task OnPageChangedAsync(int newPageNumber)
+	{
+		var offset = (newPageNumber - 1) * pageLimit;
+		await GetTrendImages(offset);
+	}
+
+	private async Task GetTrendImages(int offset = 0)
+	{
+		var response = await giphyService.Trending(offset);
+		giphyPagination = response.Pagination;
+		currentPage = giphyPagination.Offset / pageLimit + 1;
+		giphyImages = response.Data.Select(d => d.Images.Original.Url).ToList();
+	}
+
+	private void SetImages(GiphyResponse response)
+	{
+		giphyPagination = response.Pagination;
+		currentPage = giphyPagination.Offset / pageLimit + 1;
+		giphyImages = response.Data.Select(d => d.Images.Original.Url).ToList();
+	}
+
+	private async Task OnSearch()
+	{
+		if (!string.IsNullOrWhiteSpace(searchString))
+		{
+			var response = await giphyService.Serach(searchString);
+			SetImages(response);
+		}
+		else
+		{
+			await GetTrendImages();
+		}
+	}
+}

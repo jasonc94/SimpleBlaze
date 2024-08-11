@@ -1,9 +1,11 @@
 using SimpleBlazorApp.Components;
+using SimpleBlazorApp.Config;
+using SimpleBlazorApp.Helpers;
 using SimpleBlazorApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-ConfigureServices(builder.Services);
+ConfigureServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
@@ -26,8 +28,18 @@ app.MapRazorComponents<App>()
 app.Run();
 
 
-static void ConfigureServices(IServiceCollection services)
+static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
+
+	// Bind configuration settings to the GiphySettings class
+	services.Configure<GiphyConfig>(configuration.GetSection("Giphy"));
+
+	services.AddSingleton<GiphyDefaultQueryParam>(sp =>
+	{
+		var configuration = sp.GetRequiredService<IConfiguration>();
+		return new GiphyDefaultQueryParam(configuration);
+	});
+
 	// Add services to the container.
 	services.AddRazorComponents()
 		.AddInteractiveServerComponents();
@@ -35,4 +47,8 @@ static void ConfigureServices(IServiceCollection services)
 	services.AddBlazorBootstrap();
 
 	services.AddSingleton<ITasksService, TasksService>();
+
+	services.AddHttpClient("Giphy").AddHttpMessageHandler<GiphyDefaultQueryParam>();
+
+	services.AddSingleton<IGiphyService, GiphyService>();
 }
