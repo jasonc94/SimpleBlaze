@@ -1,4 +1,5 @@
 ﻿using SimpleBlazorApp.Models;
+using SimpleBlazorApp.Repository;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,7 +8,7 @@ namespace SimpleBlazorApp.Services
 	public interface ITasksService
 	{
 		event Action OnStateChanged;
-		List<WorkItem> GetAllTasks();
+		Task<List<WorkItem>> GetAllTasks();
 		Task DeleteTask(WorkItem task);
 
 		Task AddNewTask(WorkItem task);
@@ -18,63 +19,65 @@ namespace SimpleBlazorApp.Services
 	public class TasksService : ITasksService
 	{
 		public List<WorkItem> TaskList = new List<WorkItem>();
-		public event Action OnStateChanged;
+		public event Action? OnStateChanged;
+		private readonly ITaskRepository _taskRepository;
 
-		public TasksService() {
-			TaskList = new List<WorkItem>
-			{
-				new WorkItem()
-				{
-					Id = Guid.NewGuid().ToString(),
-					Name = "Create Task Page",
-					Description = "Create Task Page",
-					CreatedDateTime = DateTime.UtcNow,
-					Status = Models.TaskStatus.InProgress
-				},
-				new WorkItem()
-				{
-					Id = Guid.NewGuid().ToString(),
-					Name = "Create Video Search Page",
-					Description = "Create Video Search Page",
-					CreatedDateTime = DateTime.UtcNow,
-					Status = Models.TaskStatus.New
-				},
-				new WorkItem()
-				{
-					Id = Guid.NewGuid().ToString(),
-					Name = "Create GIf Search Page",
-					Description = "Create GIf Search Page",
-					CreatedDateTime = DateTime.UtcNow,
-					Status = Models.TaskStatus.New
-				},
-			};
+		public TasksService(ITaskRepository taskRepository)
+		{
+			_taskRepository = taskRepository;
 		}
+
+		//public TasksService() {
+		//	TaskList = new List<WorkItem>
+		//	{
+		//		new WorkItem()
+		//		{
+		//			Id = Guid.NewGuid().ToString(),
+		//			Name = "Create Task Page",
+		//			Description = "Create Task Page",
+		//			CreatedDateTime = DateTime.UtcNow,
+		//			Status = Models.TaskStatus.InProgress
+		//		},
+		//		new WorkItem()
+		//		{
+		//			Id = Guid.NewGuid().ToString(),
+		//			Name = "Create Video Search Page",
+		//			Description = "Create Video Search Page",
+		//			CreatedDateTime = DateTime.UtcNow,
+		//			Status = Models.TaskStatus.New
+		//		},
+		//		new WorkItem()
+		//		{
+		//			Id = Guid.NewGuid().ToString(),
+		//			Name = "Create GIf Search Page",
+		//			Description = "Create GIf Search Page",
+		//			CreatedDateTime = DateTime.UtcNow,
+		//			Status = Models.TaskStatus.New
+		//		},
+		//	};
+		//}
 
 		public async Task AddNewTask(WorkItem task)
 		{
-			TaskList.Add(task);
+			await _taskRepository.AddNewTask(task);
 			OnStateChanged?.Invoke();
 		}
 
 		public async Task DeleteTask(WorkItem task)
 		{
-			TaskList.RemoveAll(t => t.Id == task.Id);
+			await _taskRepository.DeleteTask(task);
 			OnStateChanged?.Invoke();
 		}
 
-		public List<WorkItem> GetAllTasks()
+		public async Task<List<WorkItem>> GetAllTasks()
 		{
-			return TaskList;
+			return await _taskRepository.GetAllTask();
 		}
 
 		public async Task UpdateTask(WorkItem task)
 		{
-			var index = TaskList.FindIndex(t => t.Id == task.Id);
-			if (index != -1)
-			{
-				TaskList[index] = task;
-				OnStateChanged?.Invoke();
-			}
+			await _taskRepository.UpdateTask(task); 
+			OnStateChanged?.Invoke();
 		}
 	}
 }

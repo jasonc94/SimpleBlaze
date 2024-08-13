@@ -6,7 +6,7 @@
 
 main {
     flex: 1;
-    height:unset!important
+    height: unset !important;
 }
 
 .sidebar {

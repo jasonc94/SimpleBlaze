@@ -12,7 +12,7 @@
 	<NewTaskButton></NewTaskButton>
 </div>
 
-<div class="container-fluid">
+<div class="container-fluid mb-3">
 	<div class="row justify-content-between gx-5">
 
 		@foreach (var status in statuses)
@@ -45,11 +45,10 @@
 		Models.TaskStatus.Complete,
 	};
 
-	protected override Task OnInitializedAsync()
+	protected override async Task OnInitializedAsync()
 	{
-		tasks = tasksService.GetAllTasks();
-		tasksService.OnStateChanged += TaskListChanged;
-		return base.OnInitializedAsync();
+		tasks = await tasksService.GetAllTasks();
+		tasksService.OnStateChanged += async () => await TaskListChanged();
 	}
 
 	private IEnumerable<WorkItem> Tasks(Models.TaskStatus status)
@@ -57,10 +56,10 @@
 		return tasks.Where(t => t.Status == status);
 	}
 
-	private void TaskListChanged()
+	private async Task TaskListChanged()
 	{
-		tasks = tasksService.GetAllTasks();
-		InvokeAsync(() => StateHasChanged());
+		tasks = await tasksService.GetAllTasks();
+		await InvokeAsync(() => StateHasChanged());
 	}
 
 	private string GetStatusDisplayName(Models.TaskStatus status)

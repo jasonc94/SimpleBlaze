@@ -1,6 +1,10 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SimpleBlazorApp.Components;
 using SimpleBlazorApp.Config;
+using SimpleBlazorApp.Data;
 using SimpleBlazorApp.Helpers;
+using SimpleBlazorApp.Repository;
 using SimpleBlazorApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +34,16 @@ app.Run();
 
 static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
+	// Add services to the container.
+	services.AddRazorComponents()
+		.AddInteractiveServerComponents();
+
+	services.AddBlazorBootstrap();
+
+	services.AddDbContext<SimpleBlazeContext>(options =>
+	{
+		options.UseSqlite(configuration.GetConnectionString("SqlLiteConnectionString"));
+	});
 
 	// Bind configuration settings to the GiphySettings class
 	services.Configure<GiphyConfig>(configuration.GetSection("Giphy"));
@@ -40,15 +54,12 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
 		return new GiphyDefaultQueryParam(configuration);
 	});
 
-	// Add services to the container.
-	services.AddRazorComponents()
-		.AddInteractiveServerComponents();
-
-	services.AddBlazorBootstrap();
-
-	services.AddSingleton<ITasksService, TasksService>();
 
 	services.AddHttpClient("Giphy").AddHttpMessageHandler<GiphyDefaultQueryParam>();
 
+	services.AddScoped<ITasksService, TasksService>();
+
 	services.AddSingleton<IGiphyService, GiphyService>();
+
+	services.AddScoped<ITaskRepository,  TaskRepository>();
 }
