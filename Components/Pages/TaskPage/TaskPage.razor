@@ -12,7 +12,10 @@
 	<NewTaskButton></NewTaskButton>
 </div>
 
-<div class="container-fluid mb-3">
+@if(tasks == null){
+	<div>Loading...</div>
+}else{
+	<div class="container-fluid mb-3">
 	<div class="row justify-content-between gx-5">
 
 		@foreach (var status in statuses)
@@ -31,13 +34,16 @@
 		}
 	</div>
 </div>
+}
+
+
 
 
 
 
 @code {
 
-	private IList<WorkItem>? tasks { get; set; } = new List<WorkItem>();
+	private IList<WorkItem>? tasks { get; set; }
 	private List<Models.TaskStatus> statuses = new List<Models.TaskStatus>
 	{
 		Models.TaskStatus.New,

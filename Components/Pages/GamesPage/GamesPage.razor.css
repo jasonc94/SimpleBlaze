@@ -1,5 +1,5 @@
 ﻿
-.game2048:focus-visible
+::deep .game2048:focus-visible
 {
 	outline:none;
 }

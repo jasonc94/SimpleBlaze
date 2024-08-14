@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SimpleBlazorApp.Components;
+using SimpleBlazorApp.Components.Pages.GamesPage.Components.State;
 using SimpleBlazorApp.Config;
 using SimpleBlazorApp.Data;
 using SimpleBlazorApp.Helpers;
@@ -62,4 +63,6 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
 	services.AddSingleton<IGiphyService, GiphyService>();
 
 	services.AddScoped<ITaskRepository,  TaskRepository>();
+
+    services.AddSingleton<GameState>();
 }

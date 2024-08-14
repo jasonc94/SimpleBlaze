@@ -1,0 +1,166 @@
+﻿
+<PageTitle>2048</PageTitle>
+
+@for (int i = 0; i < 4; i++)
+{
+	<div tabindex="0" class="game2048 d-flex flex-row" @onkeydown="HandleKeyDown">
+		@for (int j = 0; j < 4; j++)
+		{
+			<div class="card d-flex flex-column justify-content-center align-items-center" style="width: 150px; height:150px; font-size:64px;">
+				@matrix[i, j]
+			</div>
+		}
+	</div>
+}
+@code {
+	private int[,] matrix = new int[4, 4];
+	private Dictionary<int, (int, int)> zeros = new();
+
+	private Dictionary<string, Func<int, int, (int, int)>> nextPositionMap = new()
+	{
+		{ "UP", (int row, int col) => (row+1, col) },
+		{ "DOWN", (int row, int col) => (row-1, col) },
+		{ "LEFT", (int row, int col) => (row, col+1) },
+		{ "RIGHT", (int row, int col) => (row, col-1) }
+	};
+
+	protected override Task OnInitializedAsync()
+	{
+		for (var i = 0; i < 4; i++)
+		{
+			for (var j = 0; j < 4; j++)
+			{
+				var index = i * 4 + j;
+				zeros.Add(index, (i, j));
+			}
+		}
+		InitMatrix();
+		return base.OnInitializedAsync();
+	}
+
+
+	private void InitMatrix()
+	{
+		for (var i = 0; i < 2; i++)
+		{
+			PopulateTwo();
+		}
+	}
+
+	private void PopulateTwo()
+	{
+		var random = new Random(DateTime.UtcNow.Nanosecond);
+		var keys = zeros.Keys.ToList();
+		if (keys.Count > 0)
+		{
+			var randomIndex = keys[random.Next(keys.Count)];
+			if (zeros.ContainsKey(randomIndex))
+			{
+				(int row, int col) = zeros[randomIndex];
+				zeros.Remove(randomIndex);
+				matrix[row, col] = 2;
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	private void HandleKeyDown(KeyboardEventArgs e)
+	{
+		switch (e.Key)
+		{
+			case "ArrowUp":
+				for (var col = 0; col < 4; col++)
+				{
+					Calc(0, col, "UP");
+				}
+				break;
+			case "ArrowDown":
+				for (var col = 0; col < 4; col++)
+				{
+					Calc(3, col, "DOWN");
+				}
+				break;
+			case "ArrowLeft":
+				for (var row = 0; row < 4; row++)
+				{
+					Calc(row, 0, "LEFT");
+				}
+				break;
+			case "ArrowRight":
+				for (var row = 0; row < 4; row++)
+				{
+					Calc(row, 3, "RIGHT");
+				}
+				break;
+		}
+		PopulateTwo();
+	}
+
+
+	/// <summary>
+	/// recalculate certain column or row based on direction
+	/// </summary>
+	/// <param name="row"></param>
+	/// <param name="col"></param>
+	/// <param name="direction"></param>
+	private void Calc(int row, int col, string direction)
+	{
+		var nextNonZeroPosition = NextNonZero(row, col, direction);
+		if (nextNonZeroPosition.HasValue)
+		{
+			var (nextRow, nextCol, value) = nextNonZeroPosition.Value;
+			if (matrix[row, col] == 0)
+			{
+				matrix[row, col] = value;
+				zeros.Remove(row * 4 + col);
+				SetPositionToZero(nextRow, nextCol);
+			}
+			else if (value == matrix[row, col])
+			{
+				matrix[row, col] *= 2;
+				SetPositionToZero(nextRow, nextCol);
+			}
+			(nextRow, nextCol) = nextPositionMap[direction](row, col);
+			if (IsInRange(nextRow, nextCol))
+			{
+				Calc(nextRow, nextCol, direction);
+			}
+		}
+	}
+
+
+	private void SetPositionToZero(int row, int col)
+	{
+		matrix[row, col] = 0;
+		zeros.Add(row * 4 + col, (row, col));
+	}
+
+	/// <summary>
+	/// returns the next non zero index with value (row, col, value)
+	/// </summary>
+	/// <param name="row"></param>
+	/// <param name="col"></param>
+	/// <param name="direction"></param>
+	/// <returns></returns>
+	private (int, int, int)? NextNonZero(int row, int col, string direction)
+	{
+		(int nextRow, int nextCol) = nextPositionMap[direction](row, col);
+		while (IsInRange(nextRow, nextCol))
+		{
+			if (matrix[nextRow, nextCol] != 0)
+			{
+				return (nextRow, nextCol, matrix[nextRow, nextCol]);
+			}
+			(nextRow, nextCol) = nextPositionMap[direction](nextRow, nextCol);
+		}
+		return null;
+	}
+
+	private bool IsInRange(int row, int col)
+	{
+		return row >= 0 && row < 4 && col >= 0 && col < 4;
+	}
+}
